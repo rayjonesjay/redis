@@ -2,9 +2,8 @@ package server
 
 import (
 	"fmt"
-	"io"
 	"net"
-	"os"
+	"redis/resp"
 	"strings"
 )
 
@@ -30,17 +29,16 @@ func Server() {
 	// create an infinite loop and receive commands from clients and responds to them
 	for {
 
-		// hold the message received, max size is 1024
-		buf := make([]byte, 1024)
+		resp := resp.NewResp(conn)
 
-		_, err = conn.Read(buf)
+		value, err := resp.Read()
+
 		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			fmt.Println("error reading from client: ", err.Error())
-			os.Exit(1) // fix this part, server should not break
+			fmt.Println(err)
+			return
 		}
+
+		fmt.Println(value)
 
 		// ignore request and send back a PONG
 		conn.Write([]byte("+OK\r\n"))
